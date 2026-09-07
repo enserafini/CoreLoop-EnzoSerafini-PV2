@@ -11,7 +11,7 @@ function love.load()
 
     maquinaEstado = MaquinaEstado {
         titulo = function()
-            return EstadoTitulo("PECESIN GLOTONSIN", "Presiona ENTER para jugar")
+            return EstadoTitulo("PECESIN GLOTONSIN", "Presiona ENTER para sumergirte!")
         end,
 
         jugar = function()
