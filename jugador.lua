@@ -2,10 +2,10 @@ Class = require 'lib.class'
 
 Jugador = Class{}
 
-function Jugador:init(x, y, tamaño)
+function Jugador:init(x, y, tamano)
     self.x = x
     self.y = y
-    self.tamaño = tamaño
+    self.tamano = tamano
     self.velocidad = 200
 
     -- Cargamos el spritesheet del pez espada
@@ -36,7 +36,7 @@ function Jugador:Actualizar(dt)
     end
 
     -- Evitamos que el jugador salga de la pantalla
-    local radio = self.tamaño / 2
+    local radio = self.tamano / 2
 
     if self.x - radio < 0 then
         self.x = radio
@@ -56,7 +56,7 @@ function Jugador:Actualizar(dt)
 end
 
 function Jugador:Dibujar()
-    local escala = self.tamaño / self.ancho
+    local escala = self.tamano / self.ancho
 
     love.graphics.draw(self.textura, self.quad, self.x, self.y, 0, escala, escala, self.ancho / 2, self.alto / 2)
 end

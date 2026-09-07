@@ -1,13 +1,14 @@
 require 'dependencias'
 
+
 maquinaEstado = nil
 
 function love.load()
 
+    math.randomseed(os.time())
+    
     love.window.setTitle("PECESIN GLOTONSIN")
-
     love.window.setMode(960, 540)
-
     love.graphics.setDefaultFilter("nearest", "nearest")
 
     maquinaEstado = MaquinaEstado{
