@@ -11,5 +11,7 @@ require 'enemigos.tortuga'
 require 'estado'
 require 'estadoTitulo'
 require 'estadoJugar'
+require 'estadoVictoria'
+require 'estadoDerrota'
 
 require 'maquinaEstado'

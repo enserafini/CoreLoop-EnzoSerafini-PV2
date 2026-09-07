@@ -15,6 +15,7 @@ function MaquinaEstado:cambiar(nombreEstado, parametrosIniciales)
     end
 
     self.actual = self.estados[nombreEstado]()
+    self.nombreActual = nombreEstado
 
     if self.actual.ingresar then
         self.actual:ingresar(parametrosIniciales)

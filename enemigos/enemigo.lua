@@ -82,3 +82,11 @@ function Enemigo:Dibujar()
 
     love.graphics.draw(self.textura, self.quad, self.x, self.y, 0, escala, escala, self.ancho / 2, self.alto / 2)
 end
+
+function Enemigo:ColisionaCon(jugador)
+    local diferenciaX = self.x - jugador.x
+    local diferenciaY = self.y - jugador.y
+    local distancia = math.sqrt(diferenciaX * diferenciaX + diferenciaY * diferenciaY)
+
+    return distancia < (self.tamano + jugador.tamano) / 2
+end
