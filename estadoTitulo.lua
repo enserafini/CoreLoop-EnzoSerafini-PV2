@@ -1,7 +1,7 @@
 Class = require 'lib.class'
 require 'estado'
 
-EstadoTitulo = Class{
+EstadoTitulo = Class {
     __includes = Estado
 }
 

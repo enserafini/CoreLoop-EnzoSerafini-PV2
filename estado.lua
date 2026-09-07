@@ -1,6 +1,6 @@
 Class = require 'lib.class'
 
-Estado = Class{}
+Estado = Class {}
 
 function Estado:init()
 end

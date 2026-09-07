@@ -9,7 +9,7 @@ function love.load()
     love.window.setMode(960, 540)
     love.graphics.setDefaultFilter("nearest", "nearest")
 
-    maquinaEstado = MaquinaEstado{
+    maquinaEstado = MaquinaEstado {
         titulo = function()
             return EstadoTitulo("PECESIN GLOTONSIN", "Presiona ENTER para jugar")
         end,

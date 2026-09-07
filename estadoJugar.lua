@@ -3,7 +3,7 @@ Class = require 'lib.class'
 require 'estado'
 require 'jugador'
 
-EstadoJugar = Class{
+EstadoJugar = Class {
     __includes = Estado
 }
 
@@ -37,7 +37,7 @@ function EstadoJugar:GenerarEnemigo(tipo)
     local tamano = math.random(40, 110)
 
     if not tipo then
-        tipo = math.random(1, 4)
+        tipo = math.random(1, 5)
     end
 
     if tipo == 1 then
@@ -46,8 +46,10 @@ function EstadoJugar:GenerarEnemigo(tipo)
         table.insert(self.enemigos, PezLinterna(x, y, tamano))
     elseif tipo == 3 then
         table.insert(self.enemigos, Pulpo(x, y, tamano))
-    else
+    elseif tipo == 4 then
         table.insert(self.enemigos, Tortuga(x, y, tamano))
+    else
+        table.insert(self.enemigos, Anguila(x, y, tamano))
     end
 end
 
@@ -59,7 +61,7 @@ function EstadoJugar:actualizar(dt)
     self.jugador:Actualizar(dt)
 
     for i, enemigo in ipairs(self.enemigos) do
-        enemigo:Actualizar(dt, self.jugador)
+        enemigo:Actualizar(dt, self.jugador, self.puntaje)
     end
 
     self:ChequearColisiones()
@@ -81,11 +83,23 @@ function EstadoJugar:actualizar(dt)
 end
 
 function EstadoJugar:dibujar()
-    self.jugador:Dibujar()
+    -- Mostramos el sprite correspondiente al estado del jugador
+    if self.tiempoInvulnerable > 0 then
+        self.jugador:DibujarGolpeado(self.tiempoInvulnerable)
+    elseif self.jugador.seMueve then
+        self.jugador:DibujarMovimiento()
+    else
+        self.jugador:DibujarReposo()
+    end
 
     for i, enemigo in ipairs(self.enemigos) do
         enemigo:Dibujar()
     end
+
+    -- Mostramos la información de la partida
+    love.graphics.print("Puntaje: " .. self.puntaje .. "/" .. self.puntajeVictoria, 20, 20)
+    love.graphics.print("Vidas: " .. self.vidas, 20, 45)
+    love.graphics.print("Tamaño: " .. self.jugador.tamano, 20, 70)
 end
 
 function EstadoJugar:ChequearColisiones()
@@ -99,7 +113,6 @@ function EstadoJugar:ChequearColisiones()
                 self.jugador.tamano = self.jugador.tamano + 5
 
                 table.remove(self.enemigos, i)
-
             elseif enemigo.tamano > self.jugador.tamano and self.tiempoInvulnerable <= 0 then
                 -- El jugador recibe daño
                 self.vidas = self.vidas - 1
