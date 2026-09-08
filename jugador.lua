@@ -1,6 +1,6 @@
 Class = require 'lib.class'
 
-Jugador = Class {}
+Jugador = Class{}
 
 function Jugador:init(x, y, tamano)
     self.x = x
@@ -8,7 +8,7 @@ function Jugador:init(x, y, tamano)
     self.tamano = tamano
     self.velocidad = 200
 
-    -- Carga de sprites del pez espada
+    -- Cargamos los sprites del pez espada
     self.texturaMovimiento = love.graphics.newImage("imagenes/pezEspadaMovimiento.png")
     self.texturaReposo = love.graphics.newImage("imagenes/pezEspadaReposo.png")
     self.texturaGolpeado = love.graphics.newImage("imagenes/pezEspadaGolpeado.png")
@@ -17,31 +17,27 @@ function Jugador:init(x, y, tamano)
     self.alto = 48
 
     -- Frames de movimiento
-    self.quadMovimiento1 = love.graphics.newQuad(0, 0, 48, 48, self.texturaMovimiento:getWidth(),
-        self.texturaMovimiento:getHeight())
-    self.quadMovimiento2 = love.graphics.newQuad(48, 0, 48, 48, self.texturaMovimiento:getWidth(),
-        self.texturaMovimiento:getHeight())
-    self.quadMovimiento3 = love.graphics.newQuad(96, 0, 48, 48, self.texturaMovimiento:getWidth(),
-        self.texturaMovimiento:getHeight())
-    self.quadMovimiento4 = love.graphics.newQuad(144, 0, 48, 48, self.texturaMovimiento:getWidth(),
-        self.texturaMovimiento:getHeight())
+    self.quadMovimiento1 = love.graphics.newQuad(0, 0, 48, 48, self.texturaMovimiento:getWidth(), self.texturaMovimiento:getHeight())
+    self.quadMovimiento2 = love.graphics.newQuad(48, 0, 48, 48, self.texturaMovimiento:getWidth(), self.texturaMovimiento:getHeight())
+    self.quadMovimiento3 = love.graphics.newQuad(96, 0, 48, 48, self.texturaMovimiento:getWidth(), self.texturaMovimiento:getHeight())
+    self.quadMovimiento4 = love.graphics.newQuad(144, 0, 48, 48, self.texturaMovimiento:getWidth(), self.texturaMovimiento:getHeight())
 
     -- Frames de reposo
     self.quadReposo1 = love.graphics.newQuad(0, 0, 48, 48, self.texturaReposo:getWidth(), self.texturaReposo:getHeight())
     self.quadReposo2 = love.graphics.newQuad(48, 0, 48, 48, self.texturaReposo:getWidth(), self.texturaReposo:getHeight())
     self.quadReposo3 = love.graphics.newQuad(96, 0, 48, 48, self.texturaReposo:getWidth(), self.texturaReposo:getHeight())
-    self.quadReposo4 = love.graphics.newQuad(144, 0, 48, 48, self.texturaReposo:getWidth(),
-        self.texturaReposo:getHeight())
+    self.quadReposo4 = love.graphics.newQuad(144, 0, 48, 48, self.texturaReposo:getWidth(), self.texturaReposo:getHeight())
 
     -- Frames cuando recibe daño
-    self.quadGolpeado1 = love.graphics.newQuad(0, 0, 48, 48, self.texturaGolpeado:getWidth(),
-        self.texturaGolpeado:getHeight())
-    self.quadGolpeado2 = love.graphics.newQuad(48, 0, 48, 48, self.texturaGolpeado:getWidth(),
-        self.texturaGolpeado:getHeight())
+    self.quadGolpeado1 = love.graphics.newQuad(0, 0, 48, 48, self.texturaGolpeado:getWidth(), self.texturaGolpeado:getHeight())
+    self.quadGolpeado2 = love.graphics.newQuad(48, 0, 48, 48, self.texturaGolpeado:getWidth(), self.texturaGolpeado:getHeight())
 
     self.frameActual = 1
     self.tiempoAnimacion = 0
     self.seMueve = false
+
+    -- Dirección hacia la que mira el pez
+    self.direccion = 1
 end
 
 function Jugador:Actualizar(dt)
@@ -50,11 +46,13 @@ function Jugador:Actualizar(dt)
     if love.keyboard.isDown("right") or love.keyboard.isDown("d") then
         self.x = self.x + self.velocidad * dt
         self.seMueve = true
+        self.direccion = 1
     end
 
     if love.keyboard.isDown("left") or love.keyboard.isDown("a") then
         self.x = self.x - self.velocidad * dt
         self.seMueve = true
+        self.direccion = -1
     end
 
     if love.keyboard.isDown("up") or love.keyboard.isDown("w") then
@@ -67,7 +65,7 @@ function Jugador:Actualizar(dt)
         self.seMueve = true
     end
 
-    -- Animamos el pez espada
+    -- Animamos el pez
     self.tiempoAnimacion = self.tiempoAnimacion + dt
 
     if self.tiempoAnimacion >= 0.12 then
@@ -113,7 +111,7 @@ function Jugador:DibujarMovimiento()
 
     local escala = self.tamano / self.ancho
 
-    love.graphics.draw(self.texturaMovimiento, quad, self.x, self.y, 0, escala, escala, self.ancho / 2, self.alto / 2)
+    love.graphics.draw(self.texturaMovimiento, quad, self.x, self.y, 0, escala * self.direccion, escala, self.ancho / 2, self.alto / 2)
 end
 
 function Jugador:DibujarReposo()
@@ -129,7 +127,7 @@ function Jugador:DibujarReposo()
 
     local escala = self.tamano / self.ancho
 
-    love.graphics.draw(self.texturaReposo, quad, self.x, self.y, 0, escala, escala, self.ancho / 2, self.alto / 2)
+    love.graphics.draw(self.texturaReposo, quad, self.x, self.y, 0, escala * self.direccion, escala, self.ancho / 2, self.alto / 2)
 end
 
 function Jugador:DibujarGolpeado(tiempo)
@@ -141,5 +139,5 @@ function Jugador:DibujarGolpeado(tiempo)
 
     local escala = self.tamano / self.ancho
 
-    love.graphics.draw(self.texturaGolpeado, quad, self.x, self.y, 0, escala, escala, self.ancho / 2, self.alto / 2)
+    love.graphics.draw(self.texturaGolpeado, quad, self.x, self.y, 0, escala * self.direccion, escala, self.ancho / 2, self.alto / 2)
 end

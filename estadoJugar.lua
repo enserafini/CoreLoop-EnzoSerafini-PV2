@@ -3,7 +3,7 @@ Class = require 'lib.class'
 require 'estado'
 require 'jugador'
 
-EstadoJugar = Class {
+EstadoJugar = Class{
     __includes = Estado
 }
 
@@ -49,26 +49,45 @@ function EstadoJugar:salir()
     self.musica:stop()
 end
 
-function EstadoJugar:GenerarEnemigo(tipo)
-    local x = math.random(50, love.graphics.getWidth() - 50)
-    local y = math.random(50, love.graphics.getHeight() - 50)
-    local tamano = math.random(40, 110)
+function EstadoJugar:PosicionSegura(tamano)
+    local radioJugador = self.jugador.tamano / 2
+    local radioEnemigo = tamano / 2
 
-    if not tipo then
-        tipo = math.random(1, 5)
+    for intento = 1, 50 do
+        local x = math.random(50, love.graphics.getWidth() - 50)
+        local y = math.random(50, love.graphics.getHeight() - 50)
+
+        local diferenciaX = x - self.jugador.x
+        local diferenciaY = y - self.jugador.y
+        local distanciaJugador = math.sqrt(diferenciaX * diferenciaX + diferenciaY * diferenciaY)
+
+        local distanciaMinimaJugador = radioJugador + radioEnemigo + 100
+
+        if distanciaJugador >= distanciaMinimaJugador then
+            local posicionValida = true
+
+            for i, enemigo in ipairs(self.enemigos) do
+                local diferenciaEnemigoX = x - enemigo.x
+                local diferenciaEnemigoY = y - enemigo.y
+                local distanciaEnemigo = math.sqrt(diferenciaEnemigoX * diferenciaEnemigoX + diferenciaEnemigoY * diferenciaEnemigoY)
+
+                local distanciaMinimaEnemigo = radioEnemigo + enemigo.tamano / 2 + 50
+
+                if distanciaEnemigo < distanciaMinimaEnemigo then
+                    posicionValida = false
+                    break
+                end
+            end
+
+            if posicionValida then
+                return x, y
+            end
+        end
     end
 
-    if tipo == 1 then
-        table.insert(self.enemigos, Medusa(x, y, tamano))
-    elseif tipo == 2 then
-        table.insert(self.enemigos, PezLinterna(x, y, tamano))
-    elseif tipo == 3 then
-        table.insert(self.enemigos, Pulpo(x, y, tamano))
-    elseif tipo == 4 then
-        table.insert(self.enemigos, Tortuga(x, y, tamano))
-    else
-        table.insert(self.enemigos, Anguila(x, y, tamano))
-    end
+    -- Si no encontramos una posicion despues de varios intentos
+    -- usamos una posicion aleatoria como ultimo recurso
+    return math.random(50, love.graphics.getWidth() - 50), math.random(50, love.graphics.getHeight() - 50)
 end
 
 function EstadoJugar:actualizar(dt)
@@ -83,8 +102,10 @@ function EstadoJugar:actualizar(dt)
     self.jugador:Actualizar(dt)
 
     for i, enemigo in ipairs(self.enemigos) do
-        enemigo:Actualizar(dt, self.jugador, self.puntaje)
+        enemigo:Actualizar(dt, self.jugador, self.puntaje, self.enemigos)
     end
+
+    self:SepararEnemigos()
 
     self:ChequearColisiones()
 
@@ -123,7 +144,7 @@ function EstadoJugar:dibujar()
         enemigo:Dibujar()
     end
 
-    -- Mostramos la información de la partida
+    -- Mostramos la informaciom dela partida
     love.graphics.setFont(self.fuenteHUD)
 
     love.graphics.setColor(0, 0, 0, 0.7)
@@ -150,9 +171,8 @@ function EstadoJugar:dibujar()
 
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.rectangle("fill", 20, 100, anchoBarra * progreso, altoBarra)
-    
-    -- Efecto visual cuando el jugador come o recibe daño, es un destello que me parecio interesante
-    -- agregarlo
+
+    -- Efecto visual cuando el jugador come o recibe daño
     if self.tiempoEfecto > 0 then
         local opacidad = self.tiempoEfecto / 0.3
 
@@ -164,6 +184,34 @@ function EstadoJugar:dibujar()
 
         love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
         love.graphics.setColor(1, 1, 1, 1)
+    end
+end
+
+function EstadoJugar:SepararEnemigos()
+    for i = 1, #self.enemigos do
+        for j = i + 1, #self.enemigos do
+            local enemigoA = self.enemigos[i]
+            local enemigoB = self.enemigos[j]
+
+            local diferenciaX = enemigoA.x - enemigoB.x
+            local diferenciaY = enemigoA.y - enemigoB.y
+            local distancia = math.sqrt(diferenciaX * diferenciaX + diferenciaY * diferenciaY)
+
+            local distanciaMinima = (enemigoA.tamano + enemigoB.tamano) / 2
+
+            if distancia > 0 and distancia < distanciaMinima then
+                local diferencia = distanciaMinima - distancia
+
+                local direccionX = diferenciaX / distancia
+                local direccionY = diferenciaY / distancia
+
+                enemigoA.x = enemigoA.x + direccionX * diferencia / 2
+                enemigoA.y = enemigoA.y + direccionY * diferencia / 2
+
+                enemigoB.x = enemigoB.x - direccionX * diferencia / 2
+                enemigoB.y = enemigoB.y - direccionY * diferencia / 2
+            end
+        end
     end
 end
 
@@ -184,6 +232,7 @@ function EstadoJugar:ChequearColisiones()
                 self.sonidoComer:play()
 
                 table.remove(self.enemigos, i)
+
             elseif enemigo.tamano > self.jugador.tamano and self.tiempoInvulnerable <= 0 then
                 -- El jugador recibe daño
                 self.vidas = self.vidas - 1
@@ -210,4 +259,67 @@ function EstadoJugar:ChequearFinDelJuego()
     end
 
     return nil
+end
+
+function EstadoJugar:GenerarEnemigo(tipo)
+    local tamano
+
+    -- Contamos cuantos enemigos son mas chicos que el jugador
+    local cantidadEnemigosChicos = 0
+
+    for i, enemigo in ipairs(self.enemigos) do
+        if enemigo.tamano < self.jugador.tamano - 10 then
+            cantidadEnemigosChicos = cantidadEnemigosChicos + 1
+        end
+    end
+
+    -- Si hay pocos enemigos que podamos comer, aumentamos la probabilidad
+    -- de que aparezca uno mas chico
+    local probabilidadChico = 0.65
+
+    if cantidadEnemigosChicos < 2 then
+        probabilidadChico = 0.85
+    end
+
+    if math.random() < probabilidadChico then
+        -- Generamos un enemigo mas chico que el jugador
+        local tamanoMaximo = math.floor(self.jugador.tamano - 15)
+
+        if tamanoMaximo < 40 then
+            tamanoMaximo = 40
+        end
+
+        tamano = math.random(40, tamanoMaximo)
+    else
+        -- Generamos un enemigo mas grande que el jugador
+        local tamanoMinimo = math.floor(self.jugador.tamano + 15)
+
+        if tamanoMinimo > 110 then
+            tamanoMinimo = 110
+        end
+
+        if tamanoMinimo < 40 then
+            tamanoMinimo = 40
+        end
+
+        tamano = math.random(tamanoMinimo, 110)
+    end
+
+    local x, y = self:PosicionSegura(tamano)
+
+    if not tipo then
+        tipo = math.random(1, 5)
+    end
+
+    if tipo == 1 then
+        table.insert(self.enemigos, Medusa(x, y, tamano))
+    elseif tipo == 2 then
+        table.insert(self.enemigos, PezLinterna(x, y, tamano))
+    elseif tipo == 3 then
+        table.insert(self.enemigos, Pulpo(x, y, tamano))
+    elseif tipo == 4 then
+        table.insert(self.enemigos, Tortuga(x, y, tamano))
+    else
+        table.insert(self.enemigos, Anguila(x, y, tamano))
+    end
 end

@@ -40,7 +40,7 @@ function EstadoTitulo:dibujar()
 
     love.graphics.draw(self.fondo, 0, 0, 0, escalaX, escalaY)
 
-    -- Título con sombras
+    -- Titulo con sombras
     love.graphics.setFont(self.fuenteTitulo)
 
     love.graphics.setColor(0, 0, 0, 0.7)
@@ -49,7 +49,7 @@ function EstadoTitulo:dibujar()
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.printf(self.titulo, 0, 170, love.graphics.getWidth(), "center")
 
-    -- Subtítulo con sombras
+    -- Subtitulo con sombras
     love.graphics.setFont(self.fuenteSubtitulo)
 
     love.graphics.setColor(0, 0, 0, 0.7)
